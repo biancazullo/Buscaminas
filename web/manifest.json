@@ -1,0 +1,35 @@
+{
+    "name": "Buscaminas Flutter",
+    "short_name": "Buscaminas",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#F7FBF8",
+    "theme_color": "#1D6B7A",
+    "description": "Juego de Buscaminas hecho con Flutter.",
+    "orientation": "any",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
