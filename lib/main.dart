@@ -7,8 +7,11 @@ import 'ui/core/theme/app_theme.dart';
 import 'ui/core/view_models/app_view_model.dart';
 import 'ui/features/home/views/project_shell.dart';
 
-void main() {
-  runApp(const BuscaminasApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final dependencies = await AppDependencies.persistent();
+  runApp(BuscaminasApp(dependencies: dependencies));
 }
 
 class BuscaminasApp extends StatefulWidget {

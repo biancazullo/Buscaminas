@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/repositories/high_score_repository.dart';
 import '../data/repositories/settings_repository.dart';
@@ -17,6 +18,23 @@ class AppDependencies {
 
   factory AppDependencies.memory() {
     final settingsStorageService = InMemorySettingsStorageService();
+    final highScoreStorageService = InMemoryHighScoreStorageService();
+
+    return AppDependencies(
+      settingsRepository: SettingsRepository(
+        storageService: settingsStorageService,
+      ),
+      highScoreRepository: HighScoreRepository(
+        storageService: highScoreStorageService,
+      ),
+    );
+  }
+
+  static Future<AppDependencies> persistent() async {
+    final preferences = await SharedPreferences.getInstance();
+    final settingsStorageService = SharedPreferencesSettingsStorageService(
+      preferences: preferences,
+    );
     final highScoreStorageService = InMemoryHighScoreStorageService();
 
     return AppDependencies(
