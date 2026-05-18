@@ -9,8 +9,8 @@ void main() {
     expect(find.byKey(const ValueKey('app-logo')), findsOneWidget);
     expect(find.byKey(const ValueKey('app-title')), findsOneWidget);
     expect(find.text('Buscaminas Flutter'), findsWidgets);
-    expect(find.text('Web PWA'), findsOneWidget);
-    expect(find.text('Mobile'), findsOneWidget);
-    expect(find.text('Material'), findsOneWidget);
+    expect(find.text('MVVM'), findsOneWidget);
+    expect(find.text('Repositorios'), findsOneWidget);
+    expect(find.text('Dominio'), findsOneWidget);
   });
 }
