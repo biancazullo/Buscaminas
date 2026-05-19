@@ -5,6 +5,8 @@ import '../../../../app/app_dependencies.dart';
 import '../../../core/view_models/app_view_model.dart';
 import '../../game/views/difficulty_selection_view.dart';
 import '../../high_scores/views/high_scores_view.dart';
+import '../../info/views/credits_view.dart';
+import '../../info/views/instructions_view.dart';
 import '../../settings/views/settings_view.dart';
 
 class MainMenuView extends StatelessWidget {
@@ -158,13 +160,13 @@ class _MenuActions extends StatelessWidget {
         key: const ValueKey('instructions-menu-button'),
         icon: Icons.menu_book_rounded,
         label: 'Instrucciones',
-        onPressed: () => _openPlaceholder(context, 'Instrucciones'),
+        onPressed: () => _openInstructions(context),
       ),
       _MenuItem(
         key: const ValueKey('credits-menu-button'),
         icon: Icons.info_rounded,
         label: 'Creditos',
-        onPressed: () => _openPlaceholder(context, 'Creditos'),
+        onPressed: () => _openCredits(context),
       ),
     ];
 
@@ -212,12 +214,16 @@ class _MenuActions extends StatelessWidget {
     );
   }
 
-  void _openPlaceholder(BuildContext context, String title) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => PlaceholderFeatureView(title: title),
-      ),
-    );
+  void _openInstructions(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const InstructionsView()));
+  }
+
+  void _openCredits(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const CreditsView()));
   }
 }
 
@@ -287,62 +293,6 @@ class _AnimatedMenuItem extends StatelessWidget {
       delay: Duration(milliseconds: delay),
       duration: const Duration(milliseconds: 420),
       child: child,
-    );
-  }
-}
-
-class PlaceholderFeatureView extends StatelessWidget {
-  const PlaceholderFeatureView({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.construction_rounded,
-                  size: 72,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Esta seccion se completa en un siguiente tramo.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  key: const ValueKey('back-to-menu-button'),
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  label: const Text('Volver'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
