@@ -5,6 +5,7 @@ import '../../../../app/app_dependencies.dart';
 import '../../../core/view_models/app_view_model.dart';
 import '../../game/views/difficulty_selection_view.dart';
 import '../../high_scores/views/high_scores_view.dart';
+import '../../settings/views/settings_view.dart';
 
 class MainMenuView extends StatelessWidget {
   const MainMenuView({
@@ -151,7 +152,7 @@ class _MenuActions extends StatelessWidget {
         key: const ValueKey('settings-menu-button'),
         icon: Icons.tune_rounded,
         label: 'Configuracion',
-        onPressed: () => _openPlaceholder(context, 'Configuracion'),
+        onPressed: () => _openSettings(context),
       ),
       _MenuItem(
         key: const ValueKey('instructions-menu-button'),
@@ -199,6 +200,14 @@ class _MenuActions extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => HighScoresView(viewModel: viewModel),
+      ),
+    );
+  }
+
+  void _openSettings(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SettingsView(appViewModel: appViewModel),
       ),
     );
   }
