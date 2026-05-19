@@ -10,6 +10,7 @@ class BoardState {
     this.elapsedSeconds = 0,
     this.attempts = 0,
     this.startedAt,
+    this.hasMines = false,
   }) : cells = List.unmodifiable(cells);
 
   factory BoardState.empty(Difficulty difficulty) {
@@ -30,6 +31,7 @@ class BoardState {
   final int elapsedSeconds;
   final int attempts;
   final DateTime? startedAt;
+  final bool hasMines;
 
   int get rows => difficulty.rows;
 
@@ -48,8 +50,16 @@ class BoardState {
     return (rows * columns) - difficulty.mineCount;
   }
 
+  bool containsPosition(int row, int column) {
+    return row >= 0 && row < rows && column >= 0 && column < columns;
+  }
+
+  int indexOf(int row, int column) {
+    return (row * columns) + column;
+  }
+
   Cell cellAt(int row, int column) {
-    return cells.firstWhere((cell) => cell.row == row && cell.column == column);
+    return cells[indexOf(row, column)];
   }
 
   BoardState copyWith({
@@ -59,6 +69,7 @@ class BoardState {
     int? elapsedSeconds,
     int? attempts,
     DateTime? startedAt,
+    bool? hasMines,
   }) {
     return BoardState(
       difficulty: difficulty ?? this.difficulty,
@@ -67,6 +78,7 @@ class BoardState {
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       attempts: attempts ?? this.attempts,
       startedAt: startedAt ?? this.startedAt,
+      hasMines: hasMines ?? this.hasMines,
     );
   }
 }
