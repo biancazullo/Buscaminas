@@ -93,7 +93,7 @@ class _GameViewState extends State<GameView> {
                     if (board.status.isFinished && !_resultOverlayDismissed)
                       _ResultOverlay(
                         board: board,
-                        isNewRecord: false,
+                        isNewRecord: widget.viewModel.isNewRecord,
                         onContinue: () {
                           setState(() => _resultOverlayDismissed = true);
                         },

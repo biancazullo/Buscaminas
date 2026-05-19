@@ -36,7 +36,9 @@ class AppDependencies {
     final settingsStorageService = SharedPreferencesSettingsStorageService(
       preferences: preferences,
     );
-    final highScoreStorageService = InMemoryHighScoreStorageService();
+    final highScoreStorageService = SharedPreferencesHighScoreStorageService(
+      preferences: preferences,
+    );
 
     return AppDependencies(
       settingsRepository: SettingsRepository(
@@ -62,7 +64,10 @@ class AppDependencies {
   GameViewModel createGameViewModel({
     GameSettings initialSettings = const GameSettings(),
   }) {
-    return GameViewModel(initialSettings: initialSettings);
+    return GameViewModel(
+      initialSettings: initialSettings,
+      highScoreRepository: highScoreRepository,
+    );
   }
 
   HighScoresViewModel createHighScoresViewModel() {

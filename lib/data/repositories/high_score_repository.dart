@@ -14,14 +14,17 @@ class HighScoreRepository {
     return _sorted(scores);
   }
 
-  Future<void> recordScore(ScoreEntry score) async {
+  Future<bool> recordScore(ScoreEntry score) async {
     final currentScores = await loadScores(score.difficulty);
+    final isNewRecord =
+        currentScores.isEmpty || score.isBetterThan(currentScores.first);
     final updatedScores = _sorted([
       ...currentScores,
       score,
     ]).take(maxScoresPerDifficulty).toList(growable: false);
 
     await storageService.writeScores(score.difficulty, updatedScores);
+    return isNewRecord;
   }
 
   Future<void> clearScores() {

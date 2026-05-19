@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:buscaminas_flutter/data/repositories/high_score_repository.dart';
+import 'package:buscaminas_flutter/data/services/high_score_storage_service.dart';
 import 'package:buscaminas_flutter/domain/models/models.dart';
 import 'package:buscaminas_flutter/domain/use_cases/minesweeper_engine.dart';
 import 'package:buscaminas_flutter/ui/features/game/view_models/game_view_model.dart';
@@ -82,6 +84,39 @@ void main() {
 
     expect(find.byKey(const ValueKey('result-overlay')), findsNothing);
     expect(find.text('Victoria'), findsOneWidget);
+  });
+
+  testWidgets('records a victory as a new high score', (tester) async {
+    const settings = GameSettings(
+      difficulty: Difficulty.easy,
+      animationsEnabled: false,
+    );
+    final repository = HighScoreRepository(
+      storageService: InMemoryHighScoreStorageService(),
+    );
+    final viewModel = GameViewModel(
+      initialSettings: settings,
+      engine: _ScriptedResultEngine(GameStatus.won),
+      highScoreRepository: repository,
+      now: () => DateTime(2026, 5, 19),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GameView(viewModel: viewModel, settings: settings),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('cell-0-0')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('new-record-label')), findsOneWidget);
+
+    final scores = await repository.loadScores(Difficulty.easy);
+    expect(scores, hasLength(1));
+    expect(scores.single.elapsedSeconds, 9);
+    expect(scores.single.attempts, 1);
   });
 
   testWidgets('shows defeat overlay and retries the same difficulty', (

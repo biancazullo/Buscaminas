@@ -17,6 +17,10 @@ class HighScoresViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
+  bool get hasAnyScores {
+    return _scores.values.any((scores) => scores.isNotEmpty);
+  }
+
   List<ScoreEntry> scoresFor(Difficulty difficulty) {
     return List.unmodifiable(_scores[difficulty] ?? const <ScoreEntry>[]);
   }

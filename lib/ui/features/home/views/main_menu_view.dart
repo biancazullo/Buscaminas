@@ -1,8 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../app/app_dependencies.dart';
 import '../../../core/view_models/app_view_model.dart';
 import '../../game/views/difficulty_selection_view.dart';
+import '../../high_scores/views/high_scores_view.dart';
 
 class MainMenuView extends StatelessWidget {
   const MainMenuView({
@@ -143,7 +145,7 @@ class _MenuActions extends StatelessWidget {
         key: const ValueKey('scores-menu-button'),
         icon: Icons.emoji_events_rounded,
         label: 'Marcadores',
-        onPressed: () => _openPlaceholder(context, 'Marcadores'),
+        onPressed: () => _openHighScores(context),
       ),
       _MenuItem(
         key: const ValueKey('settings-menu-button'),
@@ -186,6 +188,17 @@ class _MenuActions extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => DifficultySelectionView(appViewModel: appViewModel),
+      ),
+    );
+  }
+
+  void _openHighScores(BuildContext context) {
+    final viewModel = AppDependenciesScope.of(
+      context,
+    ).createHighScoresViewModel();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => HighScoresView(viewModel: viewModel),
       ),
     );
   }
