@@ -168,13 +168,13 @@ class _DifficultyOption extends StatelessWidget {
       child: InkWell(
         key: ValueKey('difficulty-${difficulty.name}-option'),
         onTap: onSelected,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(8),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               width: selected ? 3 : 1,
               color: selected

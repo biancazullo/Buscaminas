@@ -51,8 +51,10 @@ class _GameViewState extends State<GameView> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 800;
+                final isCompact = constraints.maxWidth < 520;
                 final summary = _GameSummary(
                   board: board,
+                  compact: isCompact,
                   onRestart: () {
                     widget.viewModel.prepareNewGame(board.difficulty);
                   },
@@ -68,7 +70,7 @@ class _GameViewState extends State<GameView> {
                   children: [
                     Center(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
+                        padding: EdgeInsets.all(isCompact ? 16 : 24),
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 980),
                           child: isWide
@@ -83,7 +85,7 @@ class _GameViewState extends State<GameView> {
                               : Column(
                                   children: [
                                     summary,
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: isCompact ? 16 : 24),
                                     boardView,
                                   ],
                                 ),
@@ -140,13 +142,13 @@ class _ResultOverlay extends StatelessWidget {
         color: colorScheme.scrim.withValues(alpha: 0.46),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: colorScheme.outlineVariant),
                   boxShadow: [
                     BoxShadow(
@@ -255,7 +257,7 @@ class _NewRecordBadge extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colorScheme.tertiaryContainer,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -315,9 +317,14 @@ class _ResultSummaryRow extends StatelessWidget {
 }
 
 class _GameSummary extends StatelessWidget {
-  const _GameSummary({required this.board, required this.onRestart});
+  const _GameSummary({
+    required this.board,
+    required this.compact,
+    required this.onRestart,
+  });
 
   final BoardState board;
+  final bool compact;
   final VoidCallback onRestart;
 
   @override
@@ -336,44 +343,48 @@ class _GameSummary extends StatelessWidget {
             context,
           ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: compact ? 6 : 8),
         Text(
           _messageFor(board.status),
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: compact ? 16 : 24),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: compact ? 8 : 12,
+          runSpacing: compact ? 8 : 12,
           children: [
             _StatTile(
               icon: Icons.grid_on_rounded,
               label: 'Tablero',
               value: board.difficulty.boardSizeLabel,
+              compact: compact,
             ),
             _StatTile(
               icon: Icons.dangerous_rounded,
               label: 'Restantes',
               value: '${board.remainingMines}',
               valueKey: const ValueKey('remaining-mines-value'),
+              compact: compact,
             ),
             _StatTile(
               icon: Icons.timer_rounded,
               label: 'Tiempo',
               value: '${board.elapsedSeconds}s',
               valueKey: const ValueKey('elapsed-time-value'),
+              compact: compact,
             ),
             _StatTile(
               icon: Icons.touch_app_rounded,
               label: 'Intentos',
               value: '${board.attempts}',
               valueKey: const ValueKey('attempts-value'),
+              compact: compact,
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: compact ? 16 : 24),
         FilledButton.icon(
           key: const ValueKey('restart-game-button'),
           onPressed: onRestart,
@@ -436,7 +447,7 @@ class _InteractiveBoard extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Padding(
@@ -505,36 +516,47 @@ class _BoardCellState extends State<_BoardCell> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: _isInteractive
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() {
-        _isHovered = false;
-        _isPressed = false;
-      }),
-      child: GestureDetector(
-        key: ValueKey('cell-${widget.cell.row}-${widget.cell.column}'),
-        behavior: HitTestBehavior.opaque,
-        onTap: _isInteractive ? widget.onReveal : null,
-        onLongPress: _isInteractive ? widget.onToggleFlag : null,
-        onSecondaryTap: _isInteractive ? widget.onToggleFlag : null,
-        onTapDown: _isInteractive
-            ? (_) => setState(() => _isPressed = true)
-            : null,
-        onTapCancel: () => setState(() => _isPressed = false),
-        onTapUp: (_) => setState(() => _isPressed = false),
-        child: AnimatedScale(
-          scale: _isPressed ? 0.94 : 1,
-          duration: _duration,
-          child: AnimatedContainer(
+    return Semantics(
+      label: _semanticsLabel(),
+      button: _isInteractive,
+      enabled: _isInteractive,
+      child: MouseRegion(
+        cursor: _isInteractive
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() {
+          _isHovered = false;
+          _isPressed = false;
+        }),
+        child: GestureDetector(
+          key: ValueKey('cell-${widget.cell.row}-${widget.cell.column}'),
+          behavior: HitTestBehavior.opaque,
+          onTap: _isInteractive ? widget.onReveal : null,
+          onLongPress: _isInteractive ? widget.onToggleFlag : null,
+          onSecondaryTap: _isInteractive ? widget.onToggleFlag : null,
+          onTapDown: _isInteractive
+              ? (_) => setState(() => _isPressed = true)
+              : null,
+          onTapCancel: () => setState(() => _isPressed = false),
+          onTapUp: (_) => setState(() => _isPressed = false),
+          child: AnimatedScale(
+            scale: _isPressed ? 0.94 : 1,
             duration: _duration,
-            decoration: _cellDecoration(context),
-            child: Center(
-              child: AnimatedSwitcher(
-                duration: _duration,
-                child: _cellContent(context),
+            child: AnimatedContainer(
+              duration: _duration,
+              decoration: _cellDecoration(context),
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: _duration,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: _cellContent(context),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -617,6 +639,24 @@ class _BoardCellState extends State<_BoardCell> {
     );
   }
 
+  String _semanticsLabel() {
+    final row = widget.cell.row + 1;
+    final column = widget.cell.column + 1;
+    if (widget.cell.isFlagged && !widget.cell.isRevealed) {
+      return 'Casilla $row, $column marcada con bandera';
+    }
+    if (!widget.cell.isRevealed) {
+      return 'Casilla $row, $column oculta';
+    }
+    if (widget.cell.isMine) {
+      return 'Casilla $row, $column con mina';
+    }
+    if (widget.cell.adjacentMines == 0) {
+      return 'Casilla $row, $column vacia';
+    }
+    return 'Casilla $row, $column con ${widget.cell.adjacentMines} minas cercanas';
+  }
+
   Color _numberColor(BuildContext context, int number) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -670,12 +710,14 @@ class _StatTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.compact,
     this.valueKey,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final bool compact;
   final Key? valueKey;
 
   @override
@@ -683,11 +725,11 @@ class _StatTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      constraints: const BoxConstraints(minWidth: 126),
-      padding: const EdgeInsets.all(14),
+      constraints: BoxConstraints(minWidth: compact ? 116 : 126),
+      padding: EdgeInsets.all(compact ? 12 : 14),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(

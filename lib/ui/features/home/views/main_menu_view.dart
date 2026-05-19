@@ -86,7 +86,7 @@ class _MenuHero extends StatelessWidget {
           height: 146,
           decoration: BoxDecoration(
             color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: colorScheme.primary, width: 3),
             boxShadow: [
               BoxShadow(

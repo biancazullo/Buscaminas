@@ -211,7 +211,7 @@ class _ScoreTile extends StatelessWidget {
         color: rank.isOdd
             ? colorScheme.surfaceContainerHighest
             : colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: rank == 1 ? medalColor : colorScheme.outlineVariant,
           width: rank == 1 ? 2 : 1,

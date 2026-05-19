@@ -150,6 +150,40 @@ void main() {
     expect(find.text('Partida lista'), findsOneWidget);
     expect(_textForKey(tester, const ValueKey('attempts-value')), '0');
   });
+
+  testWidgets('keeps the hard board usable on a narrow viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 740);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    const settings = GameSettings(
+      difficulty: Difficulty.hard,
+      animationsEnabled: false,
+    );
+    final viewModel = GameViewModel(
+      initialSettings: settings,
+      engine: MinesweeperEngine(random: Random(11)),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GameView(viewModel: viewModel, settings: settings),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('game-board')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cell-9-9')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('cell-0-0')));
+    await tester.pump();
+
+    expect(_textForKey(tester, const ValueKey('attempts-value')), '1');
+  });
 }
 
 String _textForKey(WidgetTester tester, Key key) {
