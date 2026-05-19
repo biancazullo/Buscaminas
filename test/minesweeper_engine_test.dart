@@ -39,6 +39,37 @@ void main() {
       expect(repeatedReveal.attempts, 1);
     });
 
+    test('ignores moves outside the board or after the game is finished', () {
+      final engine = MinesweeperEngine(random: Random(3));
+      final board = engine.createBoard(Difficulty.easy);
+
+      expect(identical(engine.revealCell(board, -1, 0), board), isTrue);
+      expect(identical(engine.toggleFlag(board, 0, 99), board), isTrue);
+
+      final finishedBoard = board.copyWith(status: GameStatus.won);
+
+      expect(
+        identical(engine.revealCell(finishedBoard, 0, 0), finishedBoard),
+        isTrue,
+      );
+      expect(
+        identical(engine.toggleFlag(finishedBoard, 0, 0), finishedBoard),
+        isTrue,
+      );
+    });
+
+    test('does not flag revealed safe cells', () {
+      final engine = MinesweeperEngine(random: Random(9));
+      final board = engine.createBoard(Difficulty.easy);
+      final revealed = engine.revealCell(board, 0, 0, now: DateTime(2026));
+
+      final afterFlagAttempt = engine.toggleFlag(revealed, 0, 0);
+
+      expect(identical(afterFlagAttempt, revealed), isTrue);
+      expect(afterFlagAttempt.cellAt(0, 0).isFlagged, isFalse);
+      expect(afterFlagAttempt.cellAt(0, 0).isRevealed, isTrue);
+    });
+
     test('reveals every mine after losing', () {
       final engine = MinesweeperEngine(random: Random(1));
       final board = _boardWithMines(Difficulty.easy, _clusteredMines);

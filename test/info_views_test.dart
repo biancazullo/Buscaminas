@@ -30,6 +30,8 @@ void main() {
     expect(find.byKey(const ValueKey('credits-view')), findsOneWidget);
     expect(find.text('Buscaminas Flutter'), findsOneWidget);
     expect(find.text('Micro-proyecto Flutter'), findsOneWidget);
+    expect(find.text('Integrantes'), findsOneWidget);
+    expect(find.text('Bianca Zullo y Corina Vera.'), findsOneWidget);
     expect(find.text('Desarrollo'), findsOneWidget);
     expect(find.text('Periodo'), findsOneWidget);
     expect(find.text('2526-3'), findsOneWidget);

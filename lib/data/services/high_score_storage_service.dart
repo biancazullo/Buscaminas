@@ -54,7 +54,13 @@ class SharedPreferencesHighScoreStorageService
       return const <ScoreEntry>[];
     }
 
-    final decoded = jsonDecode(rawValue);
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(rawValue);
+    } on FormatException {
+      return const <ScoreEntry>[];
+    }
+
     if (decoded is! List) {
       return const <ScoreEntry>[];
     }

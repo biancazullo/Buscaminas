@@ -38,5 +38,27 @@ void main() {
 
       expect(loadedSettings, savedSettings);
     });
+
+    test('falls back safely when stored enum names are unknown', () async {
+      SharedPreferences.setMockInitialValues({
+        'settings.difficulty': 'nightmare',
+        'settings.themePreference': 'sepia',
+        'settings.numberStyle': 'wireframe',
+        'settings.soundEnabled': true,
+        'settings.animationsEnabled': false,
+      });
+      final preferences = await SharedPreferences.getInstance();
+      final service = SharedPreferencesSettingsStorageService(
+        preferences: preferences,
+      );
+
+      final settings = await service.readSettings();
+
+      expect(settings.difficulty, Difficulty.easy);
+      expect(settings.themePreference, ThemePreference.system);
+      expect(settings.numberStyle, NumberStyle.classic);
+      expect(settings.soundEnabled, isTrue);
+      expect(settings.animationsEnabled, isFalse);
+    });
   });
 }

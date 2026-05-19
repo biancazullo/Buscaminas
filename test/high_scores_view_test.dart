@@ -46,9 +46,41 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('clear-scores-button')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cancel-clear-scores-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('scores-list-easy')), findsOneWidget);
+    expect(find.text('20s'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('clear-scores-button')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('confirm-clear-scores-button')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('empty-scores-message')), findsOneWidget);
+  });
+
+  testWidgets('shows empty state and disables clear action without scores', (
+    tester,
+  ) async {
+    final repository = HighScoreRepository(
+      storageService: InMemoryHighScoreStorageService(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HighScoresView(
+          viewModel: HighScoresViewModel(highScoreRepository: repository),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('empty-scores-message')), findsOneWidget);
+
+    final clearButton = tester.widget<OutlinedButton>(
+      find.byKey(const ValueKey('clear-scores-button')),
+    );
+    expect(clearButton.onPressed, isNull);
   });
 }

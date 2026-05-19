@@ -45,5 +45,20 @@ void main() {
 
       expect(await service.readScores(Difficulty.easy), isEmpty);
     });
+
+    test('ignores malformed and mismatched score data', () async {
+      SharedPreferences.setMockInitialValues({
+        'highScores.easy': 'not-json',
+        'highScores.medium':
+            '[{"difficulty":"easy","elapsedSeconds":12,"attempts":2,"playedAt":"2026-05-19T00:00:00.000"}]',
+      });
+      final preferences = await SharedPreferences.getInstance();
+      final service = SharedPreferencesHighScoreStorageService(
+        preferences: preferences,
+      );
+
+      expect(await service.readScores(Difficulty.easy), isEmpty);
+      expect(await service.readScores(Difficulty.medium), isEmpty);
+    });
   });
 }

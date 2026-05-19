@@ -46,4 +46,32 @@ void main() {
     expect(find.text('10x10'), findsOneWidget);
     expect(find.text('30'), findsOneWidget);
   });
+
+  testWidgets('opens scores and settings from the main menu', (tester) async {
+    await tester.pumpWidget(const BuscaminasApp());
+
+    await tester.tap(find.byKey(const ValueKey('skip-splash-button')));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.byKey(const ValueKey('scores-menu-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Marcadores'), findsOneWidget);
+    expect(find.byKey(const ValueKey('empty-scores-message')), findsOneWidget);
+
+    Navigator.of(tester.element(find.byType(Scaffold))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('settings-menu-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('settings-list')), findsOneWidget);
+    expect(find.text('Configuracion'), findsOneWidget);
+
+    await tester.tap(find.text('Oscuro'));
+    await tester.pump();
+
+    final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(materialApp.themeMode, ThemeMode.dark);
+  });
 }
