@@ -19,10 +19,22 @@ class GameView extends StatefulWidget {
 }
 
 class _GameViewState extends State<GameView> {
+  GameStatus? _lastSeenStatus;
+  bool _resultOverlayDismissed = false;
+
   @override
   void dispose() {
     widget.viewModel.dispose();
     super.dispose();
+  }
+
+  void _syncResultOverlay(BoardState board) {
+    if (_lastSeenStatus == board.status) {
+      return;
+    }
+
+    _lastSeenStatus = board.status;
+    _resultOverlayDismissed = false;
   }
 
   @override
@@ -31,6 +43,7 @@ class _GameViewState extends State<GameView> {
       listenable: widget.viewModel,
       builder: (context, _) {
         final board = widget.viewModel.board;
+        _syncResultOverlay(board);
 
         return Scaffold(
           appBar: AppBar(title: Text('Partida ${board.difficulty.label}')),
@@ -51,35 +64,252 @@ class _GameViewState extends State<GameView> {
                   onToggleFlag: widget.viewModel.toggleFlag,
                 );
 
-                return Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 980),
-                      child: isWide
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SizedBox(width: 310, child: summary),
-                                const SizedBox(width: 32),
-                                Expanded(child: boardView),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                summary,
-                                const SizedBox(height: 24),
-                                boardView,
-                              ],
-                            ),
+                return Stack(
+                  children: [
+                    Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 980),
+                          child: isWide
+                              ? Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(width: 310, child: summary),
+                                    const SizedBox(width: 32),
+                                    Expanded(child: boardView),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    summary,
+                                    const SizedBox(height: 24),
+                                    boardView,
+                                  ],
+                                ),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (board.status.isFinished && !_resultOverlayDismissed)
+                      _ResultOverlay(
+                        board: board,
+                        isNewRecord: false,
+                        onContinue: () {
+                          setState(() => _resultOverlayDismissed = true);
+                        },
+                        onRetry: () {
+                          setState(() => _resultOverlayDismissed = false);
+                          widget.viewModel.prepareNewGame(board.difficulty);
+                        },
+                        onExit: () => Navigator.of(context).pop(),
+                      ),
+                  ],
                 );
               },
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _ResultOverlay extends StatelessWidget {
+  const _ResultOverlay({
+    required this.board,
+    required this.isNewRecord,
+    required this.onContinue,
+    required this.onRetry,
+    required this.onExit,
+  });
+
+  final BoardState board;
+  final bool isNewRecord;
+  final VoidCallback onContinue;
+  final VoidCallback onRetry;
+  final VoidCallback onExit;
+
+  bool get _hasWon => board.status == GameStatus.won;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Positioned.fill(
+      child: ColoredBox(
+        color: colorScheme.scrim.withValues(alpha: 0.46),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.shadow.withValues(alpha: 0.22),
+                      blurRadius: 28,
+                      offset: const Offset(0, 18),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    key: const ValueKey('result-overlay'),
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Icon(
+                        _hasWon
+                            ? Icons.emoji_events_rounded
+                            : Icons.warning_rounded,
+                        size: 64,
+                        color: _hasWon
+                            ? colorScheme.tertiary
+                            : colorScheme.error,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        _hasWon ? 'Ganaste' : 'Perdiste',
+                        key: const ValueKey('result-title'),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _hasWon
+                            ? 'Descubriste todas las casillas seguras.'
+                            : 'Una mina termino la partida.',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      if (_hasWon && isNewRecord) ...[
+                        const SizedBox(height: 14),
+                        _NewRecordBadge(colorScheme: colorScheme),
+                      ],
+                      const SizedBox(height: 22),
+                      _ResultSummaryRow(
+                        icon: Icons.timer_rounded,
+                        label: 'Tiempo total',
+                        value: '${board.elapsedSeconds}s',
+                      ),
+                      _ResultSummaryRow(
+                        icon: Icons.touch_app_rounded,
+                        label: 'Intentos',
+                        value: '${board.attempts}',
+                      ),
+                      _ResultSummaryRow(
+                        icon: Icons.speed_rounded,
+                        label: 'Dificultad',
+                        value: board.difficulty.label,
+                      ),
+                      const SizedBox(height: 22),
+                      FilledButton.icon(
+                        key: const ValueKey('continue-result-button'),
+                        onPressed: onContinue,
+                        icon: const Icon(Icons.visibility_rounded),
+                        label: const Text('Continuar'),
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        key: const ValueKey('retry-result-button'),
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Reintentar'),
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton.icon(
+                        key: const ValueKey('exit-result-button'),
+                        onPressed: onExit,
+                        icon: const Icon(Icons.home_rounded),
+                        label: const Text('Salir'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NewRecordBadge extends StatelessWidget {
+  const _NewRecordBadge({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.tertiaryContainer,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Text(
+            'Nuevo record',
+            key: const ValueKey('new-record-label'),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: colorScheme.onTertiaryContainer,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResultSummaryRow extends StatelessWidget {
+  const _ResultSummaryRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, color: colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
+          ),
+        ],
+      ),
     );
   }
 }
