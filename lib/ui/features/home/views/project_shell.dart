@@ -43,6 +43,7 @@ class _ProjectShellState extends State<ProjectShell> {
           : MainMenuView(
               key: const ValueKey('main-menu-view'),
               animationsEnabled: animationsEnabled,
+              appViewModel: widget.appViewModel,
             ),
     );
   }

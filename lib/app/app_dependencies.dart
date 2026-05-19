@@ -5,6 +5,7 @@ import '../data/repositories/high_score_repository.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/services/high_score_storage_service.dart';
 import '../data/services/settings_storage_service.dart';
+import '../domain/models/game_settings.dart';
 import '../ui/core/view_models/app_view_model.dart';
 import '../ui/features/game/view_models/game_view_model.dart';
 import '../ui/features/high_scores/view_models/high_scores_view_model.dart';
@@ -58,8 +59,10 @@ class AppDependencies {
     return SettingsViewModel(settingsRepository: settingsRepository);
   }
 
-  GameViewModel createGameViewModel() {
-    return GameViewModel();
+  GameViewModel createGameViewModel({
+    GameSettings initialSettings = const GameSettings(),
+  }) {
+    return GameViewModel(initialSettings: initialSettings);
   }
 
   HighScoresViewModel createHighScoresViewModel() {

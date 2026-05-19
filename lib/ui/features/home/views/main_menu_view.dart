@@ -1,10 +1,18 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/view_models/app_view_model.dart';
+import '../../game/views/difficulty_selection_view.dart';
+
 class MainMenuView extends StatelessWidget {
-  const MainMenuView({super.key, required this.animationsEnabled});
+  const MainMenuView({
+    super.key,
+    required this.animationsEnabled,
+    required this.appViewModel,
+  });
 
   final bool animationsEnabled;
+  final AppViewModel appViewModel;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +28,7 @@ class MainMenuView extends StatelessWidget {
                   final isWide = constraints.maxWidth >= 760;
                   final menu = _MenuActions(
                     animationsEnabled: animationsEnabled,
+                    appViewModel: appViewModel,
                   );
 
                   return Center(
@@ -113,9 +122,13 @@ class _MenuHero extends StatelessWidget {
 }
 
 class _MenuActions extends StatelessWidget {
-  const _MenuActions({required this.animationsEnabled});
+  const _MenuActions({
+    required this.animationsEnabled,
+    required this.appViewModel,
+  });
 
   final bool animationsEnabled;
+  final AppViewModel appViewModel;
 
   @override
   Widget build(BuildContext context) {
@@ -124,31 +137,31 @@ class _MenuActions extends StatelessWidget {
         key: const ValueKey('play-menu-button'),
         icon: Icons.play_arrow_rounded,
         label: 'Jugar',
-        routeTitle: 'Jugar',
+        onPressed: () => _openDifficultySelection(context),
       ),
       _MenuItem(
         key: const ValueKey('scores-menu-button'),
         icon: Icons.emoji_events_rounded,
         label: 'Marcadores',
-        routeTitle: 'Marcadores',
+        onPressed: () => _openPlaceholder(context, 'Marcadores'),
       ),
       _MenuItem(
         key: const ValueKey('settings-menu-button'),
         icon: Icons.tune_rounded,
         label: 'Configuracion',
-        routeTitle: 'Configuracion',
+        onPressed: () => _openPlaceholder(context, 'Configuracion'),
       ),
       _MenuItem(
         key: const ValueKey('instructions-menu-button'),
         icon: Icons.menu_book_rounded,
         label: 'Instrucciones',
-        routeTitle: 'Instrucciones',
+        onPressed: () => _openPlaceholder(context, 'Instrucciones'),
       ),
       _MenuItem(
         key: const ValueKey('credits-menu-button'),
         icon: Icons.info_rounded,
         label: 'Creditos',
-        routeTitle: 'Creditos',
+        onPressed: () => _openPlaceholder(context, 'Creditos'),
       ),
     ];
 
@@ -168,6 +181,22 @@ class _MenuActions extends StatelessWidget {
       ],
     );
   }
+
+  void _openDifficultySelection(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DifficultySelectionView(appViewModel: appViewModel),
+      ),
+    );
+  }
+
+  void _openPlaceholder(BuildContext context, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PlaceholderFeatureView(title: title),
+      ),
+    );
+  }
 }
 
 class _MenuItem extends StatefulWidget {
@@ -175,12 +204,12 @@ class _MenuItem extends StatefulWidget {
     super.key,
     required this.icon,
     required this.label,
-    required this.routeTitle,
+    required this.onPressed,
   });
 
   final IconData icon;
   final String label;
-  final String routeTitle;
+  final VoidCallback onPressed;
 
   @override
   State<_MenuItem> createState() => _MenuItemState();
@@ -195,13 +224,7 @@ class _MenuItemState extends State<_MenuItem> {
       scale: _isPressed ? 0.97 : 1,
       duration: const Duration(milliseconds: 90),
       child: FilledButton.icon(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => PlaceholderFeatureView(title: widget.routeTitle),
-            ),
-          );
-        },
+        onPressed: widget.onPressed,
         onHover: (isHovered) {
           if (!mounted) {
             return;
