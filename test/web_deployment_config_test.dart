@@ -68,5 +68,29 @@ void main() {
       expect(workflow, contains('actions/upload-pages-artifact'));
       expect(workflow, contains('actions/deploy-pages'));
     });
+
+    test('Firebase Hosting config is reusable and project agnostic', () {
+      final firebaseConfig =
+          jsonDecode(File('firebase.json').readAsStringSync())
+              as Map<String, Object?>;
+      final hosting = firebaseConfig['hosting'] as Map<String, Object?>;
+      final rewrites = hosting['rewrites'] as List<Object?>;
+
+      expect(hosting['public'], 'build/web');
+      expect(hosting.containsKey('site'), isFalse);
+      expect(File('.firebaserc').existsSync(), isFalse);
+      expect(
+        rewrites,
+        contains(
+          allOf(
+            isA<Map>(),
+            containsPair('source', '**'),
+            containsPair('destination', '/index.html'),
+          ),
+        ),
+      );
+      expect(jsonEncode(hosting['headers']), contains('no-cache'));
+      expect(jsonEncode(hosting['headers']), contains('immutable'));
+    });
   });
 }
